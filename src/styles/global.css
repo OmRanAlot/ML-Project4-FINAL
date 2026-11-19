@@ -810,15 +810,116 @@ code {
   font-size: 28px;
 }
 
-.workbench__netfoot {
-  display: grid;
-  grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
-  gap: 1.25rem;
-  align-items: center;
+.workbench__legend {
+  margin: -0.4rem 0 0;
 }
 
-.workbench__netfoot .caption {
+/* ---------- follow-one-point journey ---------- */
+.arch__pulse {
+  filter: drop-shadow(0 0 6px #fff);
+}
+
+.journey {
+  display: grid;
+  grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.journey__side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.journey__side .scrubber {
+  margin: 0.2rem 0;
+}
+
+.journey__stops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journey__stop {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--faint);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.25s var(--ease), border-color 0.25s var(--ease), background 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+.journey__stop:hover,
+.journey__stop:focus-visible {
+  border-color: var(--stop);
+  outline: none;
+}
+
+.journey__stop.is-reached {
+  color: var(--stop);
+  border-color: color-mix(in srgb, var(--stop) 45%, transparent);
+}
+
+.journey__stop.is-now {
+  color: var(--bg);
+  background: var(--stop);
+  border-color: var(--stop);
+  transform: translateY(-1px);
+}
+
+.journey__say {
+  margin: 0;
+  min-height: 4.6em;
+  font-size: 0.95rem;
+  animation: journey-say 0.45s var(--ease);
+}
+
+@keyframes journey-say {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.journey__tag {
+  font-family: var(--mono);
+  font-size: 12px;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+}
+
+.journey__ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: journey-ping 1.6s ease-out infinite;
+}
+
+@keyframes journey-ping {
+  from {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey__ping,
+  .journey__say {
+    animation: none;
+  }
 }
 
 .workbench__block {
@@ -1143,8 +1244,14 @@ code {
     position: static;
   }
 
-  .workbench__netfoot {
+  .journey {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .journey__plot {
+    max-width: 320px;
+    width: 100%;
+    margin: 0 auto;
   }
 
   .scrolly__stage {

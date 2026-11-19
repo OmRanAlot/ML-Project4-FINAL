@@ -45,5 +45,11 @@ export function usePlayback(frameCount: number, fps = 14, initial = frameCount -
     [setFrame],
   );
 
-  return { frame, playing, toggle, scrub };
+  /** Jump to the start and play. */
+  const restart = useCallback(() => {
+    setFrame(0);
+    setPlaying(true);
+  }, [setFrame]);
+
+  return { frame, playing, toggle, scrub, restart };
 }

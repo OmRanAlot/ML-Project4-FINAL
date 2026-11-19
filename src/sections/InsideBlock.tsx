@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArchitectureDiagram } from "../components/ArchitectureDiagram";
 import { NeuronBars } from "../components/NeuronBars";
-import { Plane2D } from "../components/Plane2D";
+import { PointJourney } from "../components/PointJourney";
 import { Segmented } from "../components/Controls";
 import { Tex } from "../components/Tex";
 import { useNetwork } from "../context/NetworkContext";
+import { usePlayback } from "../hooks/usePlayback";
+import { JOURNEY_STOPS, easeJourney } from "../lib/journey";
 import { blockActivations, headLogit, sigmoid } from "../lib/mlp";
 import { COLORS, LAYER_LABELS } from "../lib/theme";
+
+/** Journey speed: 8 stops at 0.9 stops/s ≈ 8 seconds from x to ŷ. */
+const JOURNEY_STOPS_PER_SECOND = 0.9;
 
 /** Tween a number toward `target` over `ms`. */
 function useTween(target: number, ms = 700): number {
@@ -31,7 +36,8 @@ function useTween(target: number, ms = 700): number {
 }
 
 export function InsideBlock() {
-  const { model, selected, setSelected } = useNetwork();
+  const { model, selected } = useNetwork();
+  const label = model.labels[selected];
   const last = model.frameCount("relu") - 1;
   const net = model.net("relu", last);
   const reps = model.reps("relu", last);
@@ -49,9 +55,49 @@ export function InsideBlock() {
     [reps, selected],
   );
   const probability = sigmoid(headLogit(net, repValues[3][0], repValues[3][1]));
-  const label = model.labels[selected];
+  const headLine = useMemo(() => ({ a: net.head.w0, b: net.head.w1, c: net.head.b }), [net]);
+
+  const journey = usePlayback(JOURNEY_STOPS, JOURNEY_STOPS_PER_SECOND);
+  const shown = easeJourney(journey.frame);
+  const benchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setReluOn(false), [block, selected]);
+
+  // While the journey plays, the block panel follows the wave: it switches to the block the
+  // point is in, and applies ReLU the moment the wave reaches that block's neurons.
+  useEffect(() => {
+    if (!journey.playing) return;
+    const b = Math.min(2, Math.floor(shown / 2));
+    setBlock(b);
+    setReluOn(shown >= 2 * b + 1);
+  }, [journey.playing, shown]);
+
+  // Picking a new point sends it on the journey.
+  const firstPick = useRef(true);
+  const { restart } = journey;
+  useEffect(() => {
+    if (firstPick.current) {
+      firstPick.current = false;
+      return;
+    }
+    restart();
+  }, [selected, restart]);
+
+  // Play the journey once, the first time the section scrolls into view.
+  useEffect(() => {
+    const el = benchRef.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        restart();
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [restart]);
 
   return (
     <section className="section" id="inside">
@@ -70,14 +116,14 @@ export function InsideBlock() {
           Every block takes a 2D point, expands it into <strong>128 numbers</strong>, applies <strong>ReLU</strong>, and
           compresses it back down to <strong>2 numbers</strong>. Because each in-between representation{" "}
           <Tex math={String.raw`\textcolor{${COLORS.layers[1]}}{h_1}, \textcolor{${COLORS.layers[2]}}{h_2}, \textcolor{${COLORS.layers[3]}}{h_3}`} />{" "}
-          is 2D, we can plot it. Below is the trained network carrying one point (the ringed{" "}
+          is 2D, we can plot it. Below, watch the trained network carry one point (the ringed{" "}
           <span className={label ? "c1" : "c0"}>{label ? "gold" : "blue"}</span> one) all the way to a prediction. Click any
-          point on the left to follow a different one.
+          point in the plot to send a different one through.
         </p>
       </div>
 
       {/* Network on the left, the zoomed-in block (with ReLU) on the right, so both stay in view. */}
-      <div className="workbench">
+      <div className="workbench" ref={benchRef}>
         <div className="workbench__net">
           <ArchitectureDiagram
             hidden={hidden}
@@ -85,24 +131,21 @@ export function InsideBlock() {
             probability={probability}
             focusBlock={block}
             onFocusBlock={setBlock}
+            progress={shown}
           />
-          <div className="workbench__netfoot">
-            <div className="inside__pick">
-              <Plane2D
-                positions={reps[0]}
-                labels={model.labels}
-                extent={model.extentAt("relu", 0)}
-                highlight={selected}
-                onPointPick={setSelected}
-                caption="input x: click a point"
-              />
-            </div>
-            <p className="caption">
-              Red neurons are active for this point; hollow ones were switched off by ReLU. Click a block in the network
-              to zoom into it on the right. The final circle is the prediction ŷ = probability of gold:{" "}
-              <b>{probability.toFixed(3)}</b> {(probability > 0.5 ? 1 : 0) === label ? "✓ correct" : "✗ wrong"}.
-            </p>
-          </div>
+          <p className="caption workbench__legend">
+            Red neurons are active for this point; hollow ones were switched off by ReLU. Click a block to zoom into it on
+            the right.
+          </p>
+          <PointJourney
+            progress={journey.frame}
+            shown={shown}
+            playback={journey}
+            hidden={hidden}
+            repValues={repValues}
+            probability={probability}
+            headLine={headLine}
+          />
         </div>
 
         <div className="workbench__block">
