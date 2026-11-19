@@ -776,6 +776,63 @@ code {
   font-style: italic;
 }
 
+/* Network (left, pinned) beside the zoomed-in block with ReLU (right). */
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 3vw, 3rem);
+  align-items: start;
+  max-width: 1300px;
+  margin: 2.5rem auto 3rem;
+}
+
+.workbench__net {
+  position: sticky;
+  top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* The diagram is drawn at 1000 units wide; bump its labels so they stay legible at half width. */
+.workbench .arch__blocklabel,
+.workbench .arch__dim,
+.workbench .arch__val {
+  font-size: 17px;
+}
+
+.workbench .arch__layer {
+  font-size: 28px;
+}
+
+.workbench__netfoot {
+  display: grid;
+  grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.workbench__netfoot .caption {
+  margin: 0;
+}
+
+.workbench__block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.workbench__block h3 {
+  margin: 0;
+}
+
+.workbench__block .katex-display {
+  position: relative;
+  margin: 0.25rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .stages {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
@@ -1055,6 +1112,7 @@ code {
   .challenge,
   .inside,
   .stages,
+  .workbench,
   .compare,
   .payoff,
   .explorer__grid {
@@ -1074,6 +1132,14 @@ code {
   .inside__pick {
     max-width: 300px;
     margin: 0 auto;
+  }
+
+  .workbench__net {
+    position: static;
+  }
+
+  .workbench__netfoot {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .scrolly__stage {

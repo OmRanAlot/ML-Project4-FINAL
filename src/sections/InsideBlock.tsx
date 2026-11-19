@@ -76,18 +76,9 @@ export function InsideBlock() {
         </p>
       </div>
 
-      <div className="inside">
-        <div className="inside__pick">
-          <Plane2D
-            positions={reps[0]}
-            labels={model.labels}
-            extent={model.extentAt("relu", 0)}
-            highlight={selected}
-            onPointPick={setSelected}
-            caption="input x: click a point"
-          />
-        </div>
-        <div className="inside__arch">
+      {/* Network on the left, the zoomed-in block (with ReLU) on the right, so both stay in view. */}
+      <div className="workbench">
+        <div className="workbench__net">
           <ArchitectureDiagram
             hidden={hidden}
             reps={repValues}
@@ -95,49 +86,51 @@ export function InsideBlock() {
             focusBlock={block}
             onFocusBlock={setBlock}
           />
-          <p className="caption">
-            Red neurons are active for this point; hollow ones were switched off by ReLU. The final circle is the
-            prediction ŷ = probability of gold: <b>{probability.toFixed(3)}</b>{" "}
-            {(probability > 0.5 ? 1 : 0) === label ? "✓ correct" : "✗ wrong"}.
-          </p>
+          <div className="workbench__netfoot">
+            <div className="inside__pick">
+              <Plane2D
+                positions={reps[0]}
+                labels={model.labels}
+                extent={model.extentAt("relu", 0)}
+                highlight={selected}
+                onPointPick={setSelected}
+                caption="input x: click a point"
+              />
+            </div>
+            <p className="caption">
+              Red neurons are active for this point; hollow ones were switched off by ReLU. Click a block in the network
+              to zoom into it on the right. The final circle is the prediction ŷ = probability of gold:{" "}
+              <b>{probability.toFixed(3)}</b> {(probability > 0.5 ? 1 : 0) === label ? "✓ correct" : "✗ wrong"}.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="prose">
-        <h3>Zoom into one block</h3>
-        <Segmented
-          ariaLabel="Choose a block"
-          value={block}
-          onChange={setBlock}
-          options={[0, 1, 2].map((b) => ({ value: b, label: `block ${b + 1}`, color: COLORS.layers[b + 1] }))}
-        />
-        <Tex
-          display
-          math={String.raw`\textcolor{${COLORS.layers[block + 1]}}{h_{${block + 1}}} = W_2\,\mathrm{ReLU}\!\left(W_1\,${block === 0 ? "x" : `\\textcolor{${COLORS.layers[block]}}{h_{${block}}}`} + b_1\right) + b_2, \qquad W_1 \in \mathbb{R}^{128\times 2},\; W_2 \in \mathbb{R}^{2\times 128}`}
-        />
-      </div>
-
-      <div className="stages">
-        <div className="stage">
-          <span className="stage__num">①</span>
-          <h4>Lift: 2 → 128</h4>
-          <p>
-            <Tex math={String.raw`W_1 h + b_1`} /> measures the point 128 different ways. Each row of{" "}
-            <Tex math="W_1" /> is a direction, so each number says how far the point lies along that direction, past
-            some offset. For this point, the 128 measurements are:
-          </p>
-        </div>
-        <div className="stage stage--wide">
-          <NeuronBars pre={acts[block].pre} relu={relu} color={COLORS.layers[block + 1]} />
-          <button className="btn" onClick={() => setReluOn((r) => !r)}>
-            {reluOn ? "Undo ReLU" : "② Apply ReLU: clip negatives to 0"}
-          </button>
-        </div>
-        <div className="stage">
-          <span className="stage__num">③</span>
-          <h4>Squash: 128 → 2</h4>
-          <p>
-            <Tex math="W_2" /> blends the surviving numbers back into two coordinates. This point moves from{" "}
+        <div className="workbench__block">
+          <h3>Zoom into one block</h3>
+          <Segmented
+            ariaLabel="Choose a block"
+            value={block}
+            onChange={setBlock}
+            options={[0, 1, 2].map((b) => ({ value: b, label: `block ${b + 1}`, color: COLORS.layers[b + 1] }))}
+          />
+          <Tex
+            display
+            math={String.raw`\begin{gathered}\textcolor{${COLORS.layers[block + 1]}}{h_{${block + 1}}} = W_2\,\mathrm{ReLU}\!\left(W_1\,${block === 0 ? "x" : `\\textcolor{${COLORS.layers[block]}}{h_{${block}}}`} + b_1\right) + b_2 \\ W_1 \in \mathbb{R}^{128\times 2},\quad W_2 \in \mathbb{R}^{2\times 128}\end{gathered}`}
+          />
+          <div className="stage">
+            <span className="stage__num">①</span> <b>Lift: 2 → 128.</b> <Tex math={String.raw`W_1 h + b_1`} /> measures
+            the point 128 different ways. Each row of <Tex math="W_1" /> is a direction, so each number says how far the
+            point lies along that direction, past some offset. For this point, the 128 measurements are:
+          </div>
+          <div className="stage stage--wide">
+            <NeuronBars pre={acts[block].pre} relu={relu} color={COLORS.layers[block + 1]} />
+            <button className="btn" onClick={() => setReluOn((r) => !r)}>
+              {reluOn ? "Undo ReLU" : "② Apply ReLU: clip negatives to 0"}
+            </button>
+          </div>
+          <div className="stage">
+            <span className="stage__num">③</span> <b>Squash: 128 → 2.</b> <Tex math="W_2" /> blends the surviving
+            numbers back into two coordinates. This point moves from{" "}
             <b style={{ color: COLORS.layers[block] }}>
               {LAYER_LABELS[block]} = ({repValues[block][0].toFixed(2)}, {repValues[block][1].toFixed(2)})
             </b>{" "}
@@ -146,7 +139,7 @@ export function InsideBlock() {
               {LAYER_LABELS[block + 1]} = ({repValues[block + 1][0].toFixed(2)}, {repValues[block + 1][1].toFixed(2)})
             </b>
             .
-          </p>
+          </div>
         </div>
       </div>
 
