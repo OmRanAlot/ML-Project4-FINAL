@@ -7,12 +7,14 @@ interface ScrubberProps {
   onToggle: () => void;
   onScrub: (f: number) => void;
   label: ReactNode;
+  /** What is being played, for screen readers (e.g. "training", "depth"). */
+  subject?: string;
 }
 
-export function PlayScrubber({ frame, count, playing, onToggle, onScrub, label }: ScrubberProps) {
+export function PlayScrubber({ frame, count, playing, onToggle, onScrub, label, subject = "training" }: ScrubberProps) {
   return (
     <div className="scrubber">
-      <button className="btn btn--icon" onClick={onToggle} aria-label={playing ? "Pause training" : "Play training"}>
+      <button className="btn btn--icon" onClick={onToggle} aria-label={playing ? `Pause ${subject}` : `Play ${subject}`}>
         {playing ? (
           <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden>
             <rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor" />
@@ -32,7 +34,7 @@ export function PlayScrubber({ frame, count, playing, onToggle, onScrub, label }
         step={0.01}
         value={frame}
         onChange={(e) => onScrub(Number(e.target.value))}
-        aria-label="Training progress"
+        aria-label={`${subject[0].toUpperCase()}${subject.slice(1)} progress`}
         style={{ ["--pct" as string]: `${(frame / (count - 1)) * 100}%` }}
       />
       <span className="scrubber__label">{label}</span>

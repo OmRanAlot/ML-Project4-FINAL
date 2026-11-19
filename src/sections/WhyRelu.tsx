@@ -1,11 +1,17 @@
 import { useState } from "react";
+import { PlayScrubber } from "../components/Controls";
 import { Plane2D } from "../components/Plane2D";
 import { Tex } from "../components/Tex";
 import { useNetwork } from "../context/NetworkContext";
+import { usePlayback } from "../hooks/usePlayback";
 import { COLORS, LAYER_LABELS, formatPct } from "../lib/theme";
 import type { RunKey } from "../lib/types";
 
 const FIELD_RES = 64;
+/** Depth runs over x, h1, h2, h3 (0..3). */
+const DEPTH_STOPS = 4;
+/** Playback speed: 0.75 layers/s, so x → h3 takes about 4 seconds. */
+const DEPTH_PER_SECOND = 0.75;
 type Guess = "yes" | "no" | null;
 
 function Side({ run, depth, title }: { run: RunKey; depth: number; title: string }) {
@@ -49,7 +55,8 @@ function Side({ run, depth, title }: { run: RunKey; depth: number; title: string
 
 export function WhyRelu() {
   const [guess, setGuess] = useState<Guess>(null);
-  const [depth, setDepth] = useState(3);
+  const playback = usePlayback(DEPTH_STOPS, DEPTH_PER_SECOND);
+  const depth = playback.frame;
 
   return (
     <section className="section" id="relu">
@@ -82,13 +89,22 @@ export function WhyRelu() {
           <div className="prose">
             <p className="callout">
               {guess === "no" ? "Right." : "Surprisingly, no."} Without ReLU the network is stuck at the same ~87% as a
-              single line. Drag the slider and compare the two grids.
+              single line. Press play (or drag the slider) to push the points through the network and compare the two
+              grids.
             </p>
-            <label className="slider">
-              <span>depth</span>
-              <input type="range" min={0} max={3} step={0.01} value={depth} onChange={(e) => setDepth(Number(e.target.value))} aria-label="Depth" />
-              <span>{LAYER_LABELS[Math.round(depth)]}</span>
-            </label>
+            <PlayScrubber
+              subject="depth"
+              frame={depth}
+              count={DEPTH_STOPS}
+              playing={playback.playing}
+              onToggle={playback.toggle}
+              onScrub={playback.scrub}
+              label={
+                <>
+                  depth <b style={{ color: COLORS.layers[Math.round(depth)] }}>{LAYER_LABELS[Math.round(depth)]}</b>
+                </>
+              }
+            />
           </div>
           <div className="compare">
             <Side run="relu" depth={depth} title="With ReLU" />
