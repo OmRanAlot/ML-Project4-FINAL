@@ -383,13 +383,15 @@ code {
 
 .scrubber {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.6rem 0.8rem;
   margin: 0.9rem 0;
 }
 
 .scrubber__range {
-  flex: 1;
+  flex: 1 1 8rem;
+  min-width: 8rem;
   appearance: none;
   height: 4px;
   border-radius: 4px;
@@ -418,8 +420,11 @@ code {
   font-family: var(--mono);
   font-size: 0.75rem;
   color: var(--muted);
-  min-width: 13rem;
+  /* Reserve room so the label doesn't jitter as numbers change, but never more than the row. */
+  min-width: min(13rem, 100%);
+  margin-left: auto;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .toggles {
