@@ -79,8 +79,10 @@ export function Challenge() {
               </button>
               {revealed && (
                 <p className="callout">
-                  A logistic regression, the best straight line it can find, scores <b>{formatPct(best)}</b>, and no line does much better. That ceiling is a fact
-                  about the <em>data's shape</em>, not about how cleverly you dragged.
+                  A logistic regression's fitted line scores <b>{formatPct(best)}</b>. A carefully dragged line can squeeze
+                  out a little more, up to about <b>87.8%</b>, because logistic regression optimizes confidence rather
+                  than raw point count. But no straight line gets past that. That ceiling is a fact about the{" "}
+                  <em>data's shape</em>, not about how cleverly you dragged.
                 </p>
               )}
             </>

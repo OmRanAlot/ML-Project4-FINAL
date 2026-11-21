@@ -13,7 +13,7 @@ export function Recap() {
         </h2>
         <ol className="takeaways">
           <li>
-            <b>A line has a ceiling.</b> On two moons, no straight line gets past ~87%. The limit comes from the shape of the
+            <b>A line has a ceiling.</b> On two moons, no straight line gets past ~88%. The limit comes from the shape of the
             data.
           </li>
           <li>
