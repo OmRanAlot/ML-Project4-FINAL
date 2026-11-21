@@ -294,6 +294,25 @@ code {
   text-align: center;
 }
 
+.legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 1.1rem;
+  margin-top: 0.3rem;
+}
+
+.legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.legend__swatch {
+  flex: none;
+}
+
 .plane--small {
   max-width: 260px;
   margin: 1rem auto 0;

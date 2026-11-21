@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { LineLegend } from "../components/LineLegend";
 import { MetricsChart } from "../components/MetricsChart";
 import { Plane2D } from "../components/Plane2D";
 import { PlayScrubber, Segmented, Toggle } from "../components/Controls";
@@ -119,6 +120,8 @@ function TrainingScrolly() {
                   <span>
                     <b style={{ color: COLORS.layers[3] }}>h₃</b> at training step <b>{model.stepOf("relu", frame)}</b> · best line{" "}
                     {formatPct(frames[fi].probe[3])}
+                    <br />
+                    <LineLegend />
                   </span>
                 }
               />
@@ -185,6 +188,13 @@ function TrainingExplorer() {
             line={{ line: model.probeLine("relu", fi, layer), dashed: true, color: COLORS.layers[layer], opacity: 0.8 }}
             highlight={selected}
             onPointPick={setSelected}
+            caption={
+              <LineLegend
+                probeColor={COLORS.layers[layer]}
+                probeLabel={<b>{formatPct(frames[fi].probe[layer])}</b>}
+                showBoundary={showField}
+              />
+            }
           />
           <PlayScrubber
             frame={playback.frame}
